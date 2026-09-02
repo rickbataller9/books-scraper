@@ -2,6 +2,7 @@ import hashlib
 import time
 import requests
 from pathlib import Path
+from bs4 import BeautifulSoup
 
 CACHE = Path("cache")
 CACHE.mkdir(exist_ok=True)
@@ -23,3 +24,23 @@ def get(url, delay=1.0):
     key.write_text(r.text, encoding="utf-8")
     time.sleep(delay)
     return r.text
+
+#.product_pod
+#   - h3 a
+#   - .product_price .price_color
+#   - .star-rating
+
+def parse_page(html):
+    soup = BeautifulSoup(html, "lxml")
+    books = []
+
+    for pod in soup.select(".product_pod"):
+        books.append({
+            "title": pod.select_one("h3 a")["title"],
+            "price": pod.select_one(".price_color").text,
+            "rating": pod.select_one(".star-rating")["class"],
+            "stock": pod.select_one(".instock.availability").text,
+            "url": pod.select_one("h3 a")["href"],
+        })
+
+    return books
