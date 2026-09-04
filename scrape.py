@@ -31,7 +31,7 @@ def parse_page(html, base_url):
     pods = BeautifulSoup(html, "lxml")
     books = []
 
-    for pod in pods.select(".product_pod")[:3]:
+    for pod in pods.select(".product_pod"):
         books.append({
             "title": pod.select_one("h3 a")["title"],
             "rating": RATINGS.get(pod.select_one(".star-rating")["class"][-1]),
@@ -42,5 +42,18 @@ def parse_page(html, base_url):
 
     return books
 
-books = parse_page(get("https://books.toscrape.com/"), https://books.toscrape.com/)
-print(books[0])
+
+def find_next(html, base_url):
+    soup = BeautifulSoup(html, "lxml")
+    link = soup.select_one(".next a")
+    if link is None:
+        return None
+    return urljoin(base_url, link["href"])
+
+url = "https://books.toscrape.com/"
+allBooks = []
+while url:
+    page = get(url)
+    allBooks.extend(parse_page(page, url))
+    url = find_next(page, url)
+print(len(allBooks))
