@@ -4,6 +4,7 @@ import requests
 from pathlib import Path
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import csv
 
 CACHE = Path("cache")
 CACHE.mkdir(exist_ok=True)
@@ -56,4 +57,12 @@ while url:
     page = get(url)
     allBooks.extend(parse_page(page, url))
     url = find_next(page, url)
+
+def write_csv(books, path):
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["title", "rating", "price", "stock", "url"])
+        w.writeheader()
+        w.writerows(books)
+
 print(len(allBooks))
+write_csv(allBooks, "books.csv")
